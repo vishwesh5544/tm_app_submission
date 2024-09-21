@@ -155,11 +155,80 @@ Notice that it points to my domain which points to the ELB with reverse proxy fo
 - Create a CNAME record pointing to the load balancer endpoint.
 - Set up an A record with the IP address of the EC2 instance hosting the front end.
 ### Solution
-
+*I was unable to purchase a cloudflare domain or transfer my GoDaddy domain to cloudflare so I will be setting DNS via GoDaddy Panel.*
+1. My GoDaddy domain DNS setting is as follows for adding ELB DNS to my domain records:
+![image](https://github.com/user-attachments/assets/7174fe1b-2d8e-4f1b-9fee-257c6511a21c)
+2. After successful DNS addition the domain is as follows:
+![image](https://github.com/user-attachments/assets/1ba2b8a2-872a-485b-9c57-8f1ee78e1393)
 
 
 ## Task 5 - Documentation
 - Prepare comprehensive documentation detailing each step of the deployment process. Include relevant screenshots to make the process clear and reproducible.
 - Design a deployment architecture diagram using [draw.io](https://www.draw.io/) to visualize the flow and connections.
 ### Solution
+- Architecture diagram using draw.io is as follows:
+![tm-arch drawio](https://github.com/user-attachments/assets/7aabcd92-dbfb-4582-b597-096b6a99f871)
+- The deployment process is as follows:
+   1. Push to github `main` branch
+   2. On trigger to `main` the workflow will run. The code to worflow is attached above.
+   3. After the workflow succeeds, login to dockerhub and retrieve the tags
+   4. SSH into ec2 and pull the docker images
+   5. Run docker containers from images
+   6. Make sure ngix config is correct and then test config using `sudo nginx -t`. If the Nginx tests pass, reload the server by `sudo systemctl restart nginx` or `sudo nginx -s reload`
+- I have already provided my repo [fork](https://github.com/vishwesh5544/TravelMemory) above but the dockerfiles are as follows:
+   - Frontend Dockerfile: 
+      ```
+      # Stage 1: Build the React app
+      FROM node:18-alpine AS builder
+      
+      # Set the working directory
+      WORKDIR /app
+      
+      # Copy the package.json and package-lock.json files
+      COPY package*.json ./
+      
+      # Install the dependencies
+      RUN npm install
+      
+      # Copy the rest of the application code
+      COPY . .
+      
+      # Build the React application
+      RUN npm run build
+      
+      # Stage 2: Serve the React app with Nginx
+      FROM nginx:alpine
+      
+      # Copy the built React app from the builder stage to Nginx's default public directory
+      COPY --from=builder /app/build /usr/share/nginx/html
+      
+      # Expose port 80 for the Nginx server
+      EXPOSE 80
+      
+      # Start Nginx when the container launches
+      CMD ["nginx", "-g", "daemon off;"]
 
+      ``` 
+      As you can see my frontend Dockerfile is multi stated Dockerfile where:
+        1. In stage 1, I use the lighweight node alpine version and set alias as `builder` so I can use later. The stage 1 builds the React application.
+        2. In the stage 2, from the `builder` context, build files are copied to Nginx static file deployment
+   - Backend Dockerfile:
+     ```
+     FROM node:18-alpine
+
+      WORKDIR /usr/src/app
+      
+      COPY package*.json ./
+      
+      RUN npm install
+      
+      COPY . .
+      
+      EXPOSE 3001
+      
+      CMD ["node", "index.js"]
+     ```
+
+## Additional Information
+- Neovim Config: I use Neovim as my text editor. You can find my configuration [here](https://github.com/vishwesh5544/neovish).
+- Operating System: I'm using Linux Pop!_OS for all my development work.
