@@ -141,6 +141,13 @@ Notice that it points to my domain which points to the ELB with reverse proxy fo
 - Create multiple instances of both the frontend and backend servers.
 - Add these instances to a load balancer to ensure efficient distribution of incoming traffic.
 ### Solution
+1. The frontend and backend servers are contained accross 2 instances for test:
+   ![image](https://github.com/user-attachments/assets/e5821363-d121-471e-9616-545a0d95c34d)
+2. Added these instances to my target group. I have named my target group as - `vish-tg`:
+   ![image](https://github.com/user-attachments/assets/32dcf783-d22c-41cc-9667-f3f5c0e8cffe)
+3. My load balancer to point to Target group (vish-tg) is as follows:
+   ![image](https://github.com/user-attachments/assets/39459b16-56c3-4f22-a843-84ba78d7039a)
+
 
 
 ## Task 4 - Domain Setup with Cloudflare
